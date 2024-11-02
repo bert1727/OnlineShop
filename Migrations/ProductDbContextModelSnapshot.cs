@@ -49,6 +49,14 @@ namespace OnlineShop.Migrations
                             Description = "High-performance laptop",
                             Name = "Laptop",
                             Price = 1500
+                        },
+                        new
+                        {
+                            Id = 2,
+                            Category = "Electronics",
+                            Description = "High-performance laptop",
+                            Name = "Tv",
+                            Price = 1000
                         });
                 });
 
@@ -81,6 +89,13 @@ namespace OnlineShop.Migrations
                             Quantity = 1,
                             TotalPrice = 1500m,
                             UserId = 1
+                        },
+                        new
+                        {
+                            Id = 2,
+                            Quantity = 1,
+                            TotalPrice = 1000m,
+                            UserId = 2
                         });
                 });
 
@@ -114,6 +129,13 @@ namespace OnlineShop.Migrations
                             ProductId = 1,
                             Quantity = 1,
                             ShoppingCartId = 1
+                        },
+                        new
+                        {
+                            Id = 2,
+                            ProductId = 2,
+                            Quantity = 100,
+                            ShoppingCartId = 2
                         });
                 });
 
@@ -149,7 +171,15 @@ namespace OnlineShop.Migrations
                             Id = 1,
                             Email = "johndoe@example.com",
                             Name = "John Doe",
-                            Password = "hashed_password",
+                            Password = "qwerty123",
+                            Role = "Customer"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            Email = "Jack@x.com",
+                            Name = "Jack",
+                            Password = "qwerty123",
                             Role = "Customer"
                         });
                 });

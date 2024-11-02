@@ -10,8 +10,8 @@ using OnlineShop.Context;
 namespace OnlineShop.Migrations
 {
     [DbContext(typeof(ProductDbContext))]
-    [Migration("20241101092618_SeedData2")]
-    partial class SeedData2
+    [Migration("20241102105549_firtsMigration")]
+    partial class firtsMigration
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -49,9 +49,17 @@ namespace OnlineShop.Migrations
                         {
                             Id = 1,
                             Category = "Electronics",
-                            Description = "A test product for the online shop.",
-                            Name = "Test Product",
-                            Price = 100
+                            Description = "High-performance laptop",
+                            Name = "Laptop",
+                            Price = 1500
+                        },
+                        new
+                        {
+                            Id = 2,
+                            Category = "Electronics",
+                            Description = "High-performance laptop",
+                            Name = "Tv",
+                            Price = 1000
                         });
                 });
 
@@ -81,39 +89,56 @@ namespace OnlineShop.Migrations
                         new
                         {
                             Id = 1,
-                            Quantity = 0,
-                            TotalPrice = 0m,
+                            Quantity = 1,
+                            TotalPrice = 1500m,
                             UserId = 1
+                        },
+                        new
+                        {
+                            Id = 2,
+                            Quantity = 1,
+                            TotalPrice = 1000m,
+                            UserId = 2
                         });
                 });
 
             modelBuilder.Entity("OnlineShop.Models.ShoppingCartProduct", b =>
                 {
-                    b.Property<int>("ShoppingCartId")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<int>("ProductId")
-                        .HasColumnType("INTEGER");
-
                     b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int?>("ProductId")
                         .HasColumnType("INTEGER");
 
                     b.Property<int>("Quantity")
                         .HasColumnType("INTEGER");
 
-                    b.HasKey("ShoppingCartId", "ProductId");
+                    b.Property<int>("ShoppingCartId")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("Id");
 
                     b.HasIndex("ProductId");
+
+                    b.HasIndex("ShoppingCartId");
 
                     b.ToTable("CartProducts");
 
                     b.HasData(
                         new
                         {
-                            ShoppingCartId = 1,
+                            Id = 1,
                             ProductId = 1,
-                            Id = 0,
-                            Quantity = 1
+                            Quantity = 1,
+                            ShoppingCartId = 1
+                        },
+                        new
+                        {
+                            Id = 2,
+                            ProductId = 2,
+                            Quantity = 100,
+                            ShoppingCartId = 2
                         });
                 });
 
@@ -124,6 +149,7 @@ namespace OnlineShop.Migrations
                         .HasColumnType("INTEGER");
 
                     b.Property<string>("Email")
+                        .IsRequired()
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Name")
@@ -131,6 +157,7 @@ namespace OnlineShop.Migrations
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Password")
+                        .IsRequired()
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Role")
@@ -145,9 +172,17 @@ namespace OnlineShop.Migrations
                         new
                         {
                             Id = 1,
-                            Email = "testuser@example.com",
-                            Name = "Test User",
-                            Password = "TestPassword",
+                            Email = "johndoe@example.com",
+                            Name = "John Doe",
+                            Password = "qwerty123",
+                            Role = "Customer"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            Email = "Jack@x.com",
+                            Name = "Jack",
+                            Password = "qwerty123",
                             Role = "Customer"
                         });
                 });
@@ -166,10 +201,8 @@ namespace OnlineShop.Migrations
             modelBuilder.Entity("OnlineShop.Models.ShoppingCartProduct", b =>
                 {
                     b.HasOne("OnlineShop.Models.Product", "Product")
-                        .WithMany()
-                        .HasForeignKey("ProductId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .WithMany("ShoppingCartProducts")
+                        .HasForeignKey("ProductId");
 
                     b.HasOne("OnlineShop.Models.ShoppingCart", "ShoppingCart")
                         .WithMany("ShoppingCartProducts")
@@ -180,6 +213,11 @@ namespace OnlineShop.Migrations
                     b.Navigation("Product");
 
                     b.Navigation("ShoppingCart");
+                });
+
+            modelBuilder.Entity("OnlineShop.Models.Product", b =>
+                {
+                    b.Navigation("ShoppingCartProducts");
                 });
 
             modelBuilder.Entity("OnlineShop.Models.ShoppingCart", b =>
