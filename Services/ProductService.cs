@@ -3,6 +3,7 @@ using OnlineShop.Context;
 using OnlineShop.Models;
 using OnlineShop.Models.DTOs;
 using OnlineShop.Services.Interfaces;
+using OnlineShop.Utilities;
 
 namespace OnlineShop.Services;
 
@@ -10,18 +11,19 @@ public class ProductService(ProductDbContext context) : IProductService
 {
     private readonly ProductDbContext _context = context;
 
-    public async Task<List<Product>> GetProducts()
+    public async Task<List<ProductDto>> GetProducts()
     {
         var products = await _context.Products.ToListAsync();
-        return products ?? [];
+        return products.Select(ProductDtoUtils.ProductToDto).ToList() ?? [];
     }
 
-    public async Task<Product?> GetProductById(int id)
+    public async Task<ProductDto?> GetProductById(int id)
     {
-        return await _context.Products.FirstOrDefaultAsync(x => x.Id == id);
+        var product = await _context.Products.FirstOrDefaultAsync(x => x.Id == id);
+        return product is null ? null : ProductDtoUtils.ProductToDto(product);
     }
 
-    public async Task<Product> CreateProduct(ProductDto product)
+    public async Task<ProductDto> CreateProduct(ProductDto product)
     {
         var productNew = new Product
         {
@@ -33,7 +35,7 @@ public class ProductService(ProductDbContext context) : IProductService
 
         await _context.Products.AddAsync(productNew);
         await _context.SaveChangesAsync();
-        return productNew;
+        return ProductDtoUtils.ProductToDto(productNew);
     }
 
     // NOTE: возможно тут в отдельную функцию вынести проверку на существование объекта, ну или нет

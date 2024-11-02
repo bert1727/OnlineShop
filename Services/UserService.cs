@@ -11,12 +11,9 @@ public class UserService(ProductDbContext context) : IUserService
 {
     private readonly ProductDbContext _context = context;
 
-    public async Task<List<UserDto>?> GetUsers()
+    public async Task<List<UserDto>> GetUsers()
     {
         var users = await _context.Users.ToListAsync();
-
-        /* var a = users.Select(UserDtoUtils.UserToDto).ToList(); */
-
 
         return users.Select(UserDtoUtils.UserToDto).ToList();
     }
@@ -35,6 +32,7 @@ public class UserService(ProductDbContext context) : IUserService
             Name = user.Name,
             Email = user.Email,
             Password = user.Password,
+            Role = user.Role,
             ShoppingCart = new ShoppingCart { UserId = user.Id },
         };
 
@@ -68,6 +66,7 @@ public class UserService(ProductDbContext context) : IUserService
         userUpdate.Name = user.Name;
         userUpdate.Email = user.Email;
         userUpdate.Password = user.Password;
+        userUpdate.Role = user.Role;
         try
         {
             await _context.SaveChangesAsync();

@@ -4,7 +4,7 @@ namespace OnlineShop.Services.Interfaces;
 
 public interface IUserService
 {
-    public Task<List<UserDto>?> GetUsers();
+    public Task<List<UserDto>> GetUsers();
     public Task<UserDto?> GetUserById(int id);
     public Task<UserDto> AddUser(UserDto user);
     public Task<bool> DeleteUser(int id);

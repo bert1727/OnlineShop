@@ -1,5 +1,4 @@
 using Microsoft.AspNetCore.Http.HttpResults;
-using OnlineShop.Models;
 using OnlineShop.Models.DTOs;
 using OnlineShop.Services.Interfaces;
 
@@ -16,12 +15,12 @@ public static class ProductController
 
         endpoints.MapGet("/", Get).WithSummary("Get all products");
         endpoints.MapGet("/{id}", GetById).WithSummary("Get product by id");
-        endpoints.MapPost("/", Post).WithSummary("Add product to cart");
+        endpoints.MapPost("/", Post).WithSummary("Add product");
         endpoints.MapPut("/{id}", Put).WithSummary("Update product");
         endpoints.MapDelete("/{id}", Delete).WithSummary("Delete product");
     }
 
-    private static async Task<Results<Ok<List<Product>>, NotFound>> Get(
+    private static async Task<Results<Ok<List<ProductDto>>, NotFound>> Get(
         IProductService productService
     )
     {
@@ -54,7 +53,7 @@ public static class ProductController
         return isUpdated ? TypedResults.NoContent() : TypedResults.NotFound();
     }
 
-    private static async Task<Results<Ok<Product>, NotFound>> GetById(
+    private static async Task<Results<Ok<ProductDto>, NotFound>> GetById(
         int id,
         IProductService productService
     )

@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using OnlineShop.Models;
+using OnlineShop.Models.DTOs;
 using OnlineShop.Services.Interfaces;
 
 namespace OnlineShop.Controllers;
@@ -17,7 +18,7 @@ public static class CartController
         endpoints.MapDelete("/{userId}/{productId}", Delete).WithSummary("Delete product");
     }
 
-    private static async Task<List<ShoppingCartProduct>> Get(int id, ICartService cartService)
+    private static async Task<List<ProductDto>> Get(int id, ICartService cartService)
     {
         return await cartService.GetCartProducts(id);
     }

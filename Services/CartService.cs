@@ -1,7 +1,9 @@
 using Microsoft.EntityFrameworkCore;
 using OnlineShop.Context;
 using OnlineShop.Models;
+using OnlineShop.Models.DTOs;
 using OnlineShop.Services.Interfaces;
+using OnlineShop.Utilities;
 
 namespace OnlineShop.Services;
 
@@ -47,29 +49,72 @@ public class CartService(ProductDbContext context) : ICartService
             );
             await _context.SaveChangesAsync();
             return true;
-            /* return "Product added to cart"; */
         }
     }
 
-    public async Task<List<ShoppingCartProduct>> GetCartProducts(int userId)
+    public async Task<List<ProductDto>> GetCartProducts(int userId)
     {
-        /* var user = await _context */
-        /*     .Users.Include(static u => u.ShoppingCart) */
-        /*     .ThenInclude(static x => x.ShoppingCartProducts) */
-        /*     .ThenInclude(static x => x.Product) */
-        /*     .FirstOrDefaultAsync(u => u.Id == userId); */
-        var shoppingCart = await _context.Carts.FirstOrDefaultAsync(x => x.UserId == userId);
-        if (shoppingCart == null)
+        var a = await _context.CartProducts.Where(x => x.ShoppingCartId == userId).ToListAsync();
+
+        Console.WriteLine($"Test {a}, size of a: {a.Count}");
+        var b = a.Select(x => x.ProductId).ToList();
+        Console.WriteLine($"Cart was found and products was found, size: {b.Count}");
+        var res = new List<ProductDto>();
+        foreach (int? item in b)
         {
-            Console.WriteLine("Cart is null");
-            return [];
+            if (item == null)
+                continue;
+            var product = await _context.Products.FirstOrDefaultAsync(x => x.Id == item);
+            if (product == null)
+                continue;
+            Console.WriteLine("Item was adddes to res");
+            res.Add(ProductDtoUtils.ProductToDto(product));
         }
-        var userProducts = shoppingCart.ShoppingCartProducts;
-        if (userProducts == null)
-        {
-            Console.WriteLine("userProducts is null");
-        }
-        return userProducts ?? [];
+        Console.WriteLine(res.ToString());
+        return res;
+
+        /* var shoppingCart = await _context.Carts.FirstOrDefaultAsync(x => x.UserId == userId); */
+        /* if (shoppingCart == null) */
+        /* { */
+        /*     Console.WriteLine("Cart is null"); */
+        /*     return []; */
+        /* } */
+        /* var userShoppingCart = shoppingCart.ShoppingCartProducts; */
+        /* if (userShoppingCart == null) */
+        /* { */
+        /*     Console.WriteLine("userProducts is null"); */
+        /* } */
+        /**/
+        /* var carts = userShoppingCart?.Select(x => x.Product).ToList(); */
+        /* if (carts == null) */
+        /* { */
+        /*     Console.WriteLine("carts is null"); */
+        /*     return []; */
+        /* } */
+        /* Console.WriteLine("Cart was found"); */
+        /**/
+        /* var products = userShoppingCart?.Select(x => x.Product).ToList(); */
+        /* if (products == null) */
+        /* { */
+        /*     Console.WriteLine("Products is null"); */
+        /*     return []; */
+        /* } */
+        /**/
+        /* List<Product> res = []; */
+        /* foreach (var product in products) */
+        /* { */
+        /*     Console.WriteLine(product); */
+        /*     if (product != null) */
+        /*     { */
+        /*         res.Append(product); */
+        /*     } */
+        /* } */
+        /* foreach (var product in res) */
+        /* { */
+        /*     Console.WriteLine(product); */
+        /* } */
+        /* return res.Select(ProductDtoUtils.ProductToDto).ToList(); */
+        /* return products.Select(ProductDtoUtils.ProductToDto).ToList(); */
     }
 
     public async Task<bool> RemoveProductFromCart(int productId, int userId)

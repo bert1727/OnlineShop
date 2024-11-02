@@ -52,9 +52,9 @@ public static class UserController
         return TypedResults.Ok(userNew);
     }
 
-    private static async Task<Results<Ok<List<UserDto>>, NotFound>> Get(IUserService userService)
+    private static async Task<Ok<List<UserDto>>> Get(IUserService userService)
     {
         var users = await userService.GetUsers();
-        return users is null ? TypedResults.NotFound() : TypedResults.Ok(users);
+        return TypedResults.Ok(users);
     }
 }
