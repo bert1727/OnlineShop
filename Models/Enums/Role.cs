@@ -1,8 +1,8 @@
-namespace onlineshop.Models.Enums;
+namespace Onlineshop.Models.Enums;
 
 public enum Role
 {
     Guest,
+    Customer,
     Admin,
-    User,
 }
