@@ -4,9 +4,9 @@ using OnlineShop.Models;
 using OnlineShop.Models.DTOs;
 using OnlineShop.Services.Interfaces;
 
-namespace OnlineShop.Controllers;
+namespace OnlineShop.ControllersMinimal;
 
-public static class CartController
+public static class CartControllerMinimal
 {
     public static void MapCartController(this WebApplication app)
     {

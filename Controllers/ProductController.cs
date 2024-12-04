@@ -1,73 +1,68 @@
-using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.AspNetCore.Mvc;
 using OnlineShop.Models.DTOs;
 using OnlineShop.Services.Interfaces;
-
-/* using Microsoft.AspNetCore.Mvc; */
-/* using Microsoft.EntityFrameworkCore; */
+using OnlineShop.Utilities.Logging;
 
 namespace OnlineShop.Controllers;
 
-public static class ProductController
+[ApiController]
+[Route("[controller]")]
+public class ProductController(ILogger<ProductController> logger, IProductService productService)
+    : ControllerBase
 {
-    public static void MapProductController(this WebApplication app)
-    {
-        var endpoints = app.MapGroup("/api/products").WithOpenApi();
+    private readonly ILogger _logger = logger;
+    private readonly IProductService _productService = productService;
 
-        endpoints.MapGet("/", Get).WithSummary("Get all products");
-        endpoints.MapGet("/{id}", GetById).WithSummary("Get product by id");
-        endpoints.MapPost("/", Post).WithSummary("Add product");
-        endpoints.MapPut("/{id}", Put).WithSummary("Update product");
-        endpoints.MapDelete("/{id}", Delete).WithSummary("Delete product");
+    /// <summary>
+    /// Получает список всех продуктов.
+    /// </summary>
+    /// <returns>Список продуктов.</returns>
+    /// <response code="200">Возвращает все продукты существующие</response>
+    /// <response code="500">Внутренняя ошибка сервера.</response>
+    [HttpGet]
+    public async Task<ActionResult> Get()
+    {
+        _logger.LogInfoProductController("Get is running");
+        var products = await _productService.GetProducts();
+        return Ok(products);
     }
 
-    private static async Task<Results<Ok<List<ProductDto>>, NotFound>> Get(
-        IProductService productService
-    )
+    /// <summary>
+    /// Получить продукт по id
+    /// </summary>
+    /// <returns>Продукт с данным id</returns>
+    /// <response code="200">Возвращает продукт.</response>
+    /// <response code="500">Внутренняя ошибка сервера.</response>
+    [HttpGet("{id:int}")]
+    public async Task<ActionResult> GetById(int id)
     {
-        var products = await productService.GetProducts();
-        return products is null
-            ? TypedResults.NotFound()
-            : TypedResults.Ok(await productService.GetProducts());
+        _logger.LogInfoProductController("GetById is running");
+        var product = await _productService.GetProductById(id);
+        return product is null ? NotFound() : Ok(product);
     }
 
-    private static async Task<Results<NoContent, NotFound>> Delete(
-        int id,
-        IProductService productService
-    )
+    [HttpDelete("{id:int}")]
+    public async Task<ActionResult> Delete(int id)
     {
-        bool isdDeleted = await productService.DeleteProduct(id);
-        return isdDeleted ? TypedResults.NoContent() : TypedResults.NotFound();
+        bool isdDeleted = await _productService.DeleteProduct(id);
+        return isdDeleted ? NoContent() : NotFound();
     }
 
-    private static async Task<Results<NoContent, NotFound, BadRequest>> Put(
-        int id,
-        ProductDto product,
-        IProductService productService
-    )
+    [HttpPut("{id:int}")]
+    public async Task<ActionResult> Put(int id, ProductDto product)
     {
         if (id != product.Id)
         {
-            return TypedResults.BadRequest();
+            return BadRequest();
         }
-        bool isUpdated = await productService.UpdateProduct(id, product);
-        return isUpdated ? TypedResults.NoContent() : TypedResults.NotFound();
+        bool isUpdated = await _productService.UpdateProduct(id, product);
+        return isUpdated ? NoContent() : NotFound();
     }
 
-    private static async Task<Results<Ok<ProductDto>, NotFound>> GetById(
-        int id,
-        IProductService productService
-    )
+    [HttpPost]
+    public async Task<ActionResult> Post(ProductDto product)
     {
-        var product = await productService.GetProductById(id);
-        return product is null ? TypedResults.NotFound() : TypedResults.Ok(product);
-    }
-
-    private static async Task<Ok<ProductDto>> Post(
-        ProductDto product,
-        IProductService productService
-    )
-    {
-        await productService.CreateProduct(product);
-        return TypedResults.Ok(product);
+        await _productService.CreateProduct(product);
+        return Ok(product);
     }
 }

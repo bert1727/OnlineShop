@@ -14,7 +14,7 @@ public class ProductService(ProductDbContext context) : IProductService
     public async Task<List<ProductDto>> GetProducts()
     {
         var products = await _context.Products.ToListAsync();
-        return products.Select(ProductDtoUtils.ProductToDto).ToList() ?? [];
+        return products.Select(ProductDtoUtils.ProductToDto).ToList();
     }
 
     public async Task<ProductDto?> GetProductById(int id)

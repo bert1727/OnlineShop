@@ -2,9 +2,9 @@ using Microsoft.AspNetCore.Http.HttpResults;
 using OnlineShop.Models.DTOs;
 using OnlineShop.Services.Interfaces;
 
-namespace OnlineShop.Controllers;
+namespace OnlineShop.ControllersMinimal;
 
-public static class UserController
+public static class UserControllerMinimal
 {
     public static void MapUserController(this WebApplication app)
     {
@@ -30,9 +30,7 @@ public static class UserController
     )
     {
         if (id != user.Id)
-        {
             return TypedResults.BadRequest();
-        }
         bool isUpdated = await userService.UpdateUser(id, user);
         return isUpdated ? TypedResults.NoContent() : TypedResults.NotFound();
     }
