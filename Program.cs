@@ -1,5 +1,8 @@
 using System.Reflection;
+using System.Text;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using OnlineShop.Context;
 using OnlineShop.ControllersMinimal;
@@ -7,6 +10,31 @@ using OnlineShop.Services;
 using OnlineShop.Services.Interfaces;
 
 var builder = WebApplication.CreateBuilder(args);
+var config = builder.Configuration;
+
+// Add authentication
+// FIXME: put in a separate file
+builder
+    .Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(opt =>
+    {
+        opt.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+            ValidIssuer = config["JwtSettings:Issuer"],
+            ValidAudience = config["JwtSettings:Audience"],
+            IssuerSigningKey = new SymmetricSecurityKey(
+                Encoding.UTF8.GetBytes(config["JwtSettings:Key"]!)
+            ),
+        };
+    });
+
+Console.WriteLine(
+    $"{config["JwtSettings:Issuer"]!} {config["JwtSettings:Audience"]} {config["JwtSettings:Key"]}"
+);
 
 // Add services to the container.
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
@@ -14,6 +42,7 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
 {
     // TODO: change this and figure out how to use it properly
+    // FIXME: put in a separate file
     options.SwaggerDoc(
         "v1",
         new OpenApiInfo
@@ -35,6 +64,36 @@ builder.Services.AddSwaggerGen(options =>
         }
     );
 
+    options.AddSecurityDefinition(
+        "Bearer",
+        new OpenApiSecurityScheme
+        {
+            Name = "Authorization",
+            Type = SecuritySchemeType.Http,
+            Scheme = "Bearer",
+            BearerFormat = "JWT",
+            In = ParameterLocation.Header,
+            Description = "Введите токен в формате: Bearer <ваш-токен>",
+        }
+    );
+
+    options.AddSecurityRequirement(
+        new OpenApiSecurityRequirement
+        {
+            {
+                new OpenApiSecurityScheme
+                {
+                    Reference = new OpenApiReference
+                    {
+                        Type = ReferenceType.SecurityScheme,
+                        Id = "Bearer",
+                    },
+                },
+                Array.Empty<string>()
+            },
+        }
+    );
+
     // using System.Reflection;
     string xmlFilename = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
     options.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, xmlFilename));
@@ -52,7 +111,17 @@ builder.Services.AddTransient<ICartService, CartService>();
 // Add default controllers
 builder.Services.AddControllers();
 
+builder.Services.AddAuthorization();
 var app = builder.Build();
+
+app.UseHttpsRedirection();
+
+app.UseRouting();
+
+app.UseAuthentication();
+app.UseAuthorization();
+
+app.MapControllers();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
@@ -60,9 +129,6 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
-
-app.UseHttpsRedirection();
-app.MapControllers();
 
 /* app.UseExceptionHandler(errorApp => */
 /* { */

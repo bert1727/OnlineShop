@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using OnlineShop.Models.DTOs;
 using OnlineShop.Services.Interfaces;
@@ -5,6 +6,7 @@ using OnlineShop.Utilities.Logging;
 
 namespace OnlineShop.Controllers;
 
+[Authorize]
 [ApiController]
 [Route("[controller]")]
 public class ProductController(ILogger<ProductController> logger, IProductService productService)
@@ -62,7 +64,25 @@ public class ProductController(ILogger<ProductController> logger, IProductServic
     [HttpPost]
     public async Task<ActionResult> Post(ProductDto product)
     {
-        await _productService.CreateProduct(product);
-        return Ok(product);
+        var createdProduct = await _productService.CreateProduct(product);
+        return Ok(createdProduct);
+    }
+
+    // NOTE: just test an Authorization
+    [HttpGet("getallauth")]
+    [Authorize]
+    public ActionResult GetAllProducts()
+    {
+        Console.WriteLine("GetAllProducts is running");
+        string[] a = ["Product1", "Product2"];
+        return Ok(a);
+    }
+
+    [HttpPost("postauth")]
+    [Authorize]
+    public ActionResult AddProduct([FromBody] string product)
+    {
+        Console.WriteLine("Postauth is running");
+        return Ok($"Product {product} added");
     }
 }

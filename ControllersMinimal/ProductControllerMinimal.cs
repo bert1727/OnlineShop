@@ -65,7 +65,7 @@ public static class ProductControllerMinimal
         IProductService productService
     )
     {
-        await productService.CreateProduct(product);
-        return TypedResults.Ok(product);
+        var createdProduct = await productService.CreateProduct(product);
+        return TypedResults.Ok(createdProduct);
     }
 }

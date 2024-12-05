@@ -35,6 +35,7 @@ public class ProductService(ProductDbContext context) : IProductService
 
         await _context.Products.AddAsync(productNew);
         await _context.SaveChangesAsync();
+        Console.WriteLine($"Id is:{productNew.Id}", productNew.Id);
         return ProductDtoUtils.ProductToDto(productNew);
     }
 
