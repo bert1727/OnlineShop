@@ -4,14 +4,14 @@ using OnlineShop.Models;
 
 namespace OnlineShop.Context;
 
-public class ProductDbContext : DbContext
+public class OnlineShopDbContext : DbContext
 {
     public DbSet<Product> Products { get; set; } = null!;
     public DbSet<User> Users { get; set; } = null!;
     public DbSet<ShoppingCart> Carts { get; set; } = null!;
     public DbSet<ShoppingCartProduct> CartProducts { get; set; } = null!;
 
-    public ProductDbContext(DbContextOptions options)
+    public OnlineShopDbContext(DbContextOptions options)
         : base(options)
     {
         Database.EnsureCreated();

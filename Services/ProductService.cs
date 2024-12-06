@@ -7,9 +7,9 @@ using OnlineShop.Utilities;
 
 namespace OnlineShop.Services;
 
-public class ProductService(ProductDbContext context) : IProductService
+public class ProductService(OnlineShopDbContext context) : IProductService
 {
-    private readonly ProductDbContext _context = context;
+    private readonly OnlineShopDbContext _context = context;
 
     public async Task<List<ProductDto>> GetProducts()
     {

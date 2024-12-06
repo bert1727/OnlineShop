@@ -44,7 +44,7 @@ public static class UserControllerMinimal
         return user is null ? TypedResults.NotFound() : TypedResults.Ok(user);
     }
 
-    private static async Task<Ok<UserDto>> Post(UserDto userDto, IUserService userService)
+    private static async Task<Ok<UserDto>> Post(UserCreationDto userDto, IUserService userService)
     {
         var userNew = await userService.AddUser(userDto);
         return TypedResults.Ok(userNew);

@@ -1,6 +1,8 @@
 # TO-DO
 
 - [ ] Implement minimal and traditional api
+  - [ ] Rename methods in controllers
+- [ ] Add validation for models
 - [ ] Add authorization and authentication
 - [ ] Provide logging
 - [ ] Write documentation

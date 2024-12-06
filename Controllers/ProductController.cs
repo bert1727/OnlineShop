@@ -6,7 +6,6 @@ using OnlineShop.Utilities.Logging;
 
 namespace OnlineShop.Controllers;
 
-[Authorize]
 [ApiController]
 [Route("[controller]")]
 public class ProductController(ILogger<ProductController> logger, IProductService productService)

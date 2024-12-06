@@ -2,14 +2,21 @@ using Microsoft.EntityFrameworkCore;
 using OnlineShop.Context;
 using OnlineShop.Models;
 using OnlineShop.Models.DTOs;
+using Onlineshop.Models.Enums;
 using OnlineShop.Services.Interfaces;
 using OnlineShop.Utilities;
 
 namespace OnlineShop.Services;
 
-public class UserService(ProductDbContext context) : IUserService
+public class UserService(OnlineShopDbContext context) : IUserService
 {
-    private readonly ProductDbContext _context = context;
+    private readonly OnlineShopDbContext _context = context;
+
+    public async Task<UserDto?> GetUserByEmail(string email)
+    {
+        var user = await _context.Users.FirstOrDefaultAsync(x => x.Email == email);
+        return user != null ? UserDtoUtils.UserToDto(user) : null;
+    }
 
     public async Task<List<UserDto>> GetUsers()
     {
@@ -24,19 +31,19 @@ public class UserService(ProductDbContext context) : IUserService
         return user is null ? null : UserDtoUtils.UserToDto(user);
     }
 
-    public async Task<UserDto> AddUser(UserDto user) // NOTE: либо тут только id Dto возвращать
+    public async Task<UserDto> AddUser(UserCreationDto user) // NOTE: либо тут только id Dto возвращать
     {
         var userNew = new User
         {
-            Id = user.Id,
             Name = user.Name,
             Email = user.Email,
             Password = user.Password,
-            Role = user.Role,
-            ShoppingCart = new ShoppingCart { UserId = user.Id },
+            Role = Role.Guest,
         };
 
         await _context.Users.AddAsync(userNew);
+        Console.WriteLine(userNew.Id);
+        userNew.ShoppingCart = new ShoppingCart { UserId = userNew.Id };
         Console.WriteLine("User was addded");
         await _context.SaveChangesAsync();
         Console.WriteLine("User was saved");

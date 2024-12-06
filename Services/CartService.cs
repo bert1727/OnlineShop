@@ -7,9 +7,9 @@ using OnlineShop.Utilities;
 
 namespace OnlineShop.Services;
 
-public class CartService(ProductDbContext context) : ICartService
+public class CartService(OnlineShopDbContext context) : ICartService
 {
-    private readonly ProductDbContext _context = context;
+    private readonly OnlineShopDbContext _context = context;
 
     public async Task<bool> AddProductToCart(int productId, int userId, int quantity)
     {
@@ -67,54 +67,10 @@ public class CartService(ProductDbContext context) : ICartService
             var product = await _context.Products.FirstOrDefaultAsync(x => x.Id == item);
             if (product == null)
                 continue;
-            Console.WriteLine("Item was adddes to res");
             res.Add(ProductDtoUtils.ProductToDto(product));
         }
         Console.WriteLine(res.ToString());
         return res;
-
-        /* var shoppingCart = await _context.Carts.FirstOrDefaultAsync(x => x.UserId == userId); */
-        /* if (shoppingCart == null) */
-        /* { */
-        /*     Console.WriteLine("Cart is null"); */
-        /*     return []; */
-        /* } */
-        /* var userShoppingCart = shoppingCart.ShoppingCartProducts; */
-        /* if (userShoppingCart == null) */
-        /* { */
-        /*     Console.WriteLine("userProducts is null"); */
-        /* } */
-        /**/
-        /* var carts = userShoppingCart?.Select(x => x.Product).ToList(); */
-        /* if (carts == null) */
-        /* { */
-        /*     Console.WriteLine("carts is null"); */
-        /*     return []; */
-        /* } */
-        /* Console.WriteLine("Cart was found"); */
-        /**/
-        /* var products = userShoppingCart?.Select(x => x.Product).ToList(); */
-        /* if (products == null) */
-        /* { */
-        /*     Console.WriteLine("Products is null"); */
-        /*     return []; */
-        /* } */
-        /**/
-        /* List<Product> res = []; */
-        /* foreach (var product in products) */
-        /* { */
-        /*     Console.WriteLine(product); */
-        /*     if (product != null) */
-        /*     { */
-        /*         res.Append(product); */
-        /*     } */
-        /* } */
-        /* foreach (var product in res) */
-        /* { */
-        /*     Console.WriteLine(product); */
-        /* } */
-        /* return res.Select(ProductDtoUtils.ProductToDto).ToList(); */
-        /* return products.Select(ProductDtoUtils.ProductToDto).ToList(); */
     }
 
     public async Task<bool> RemoveProductFromCart(int productId, int userId)

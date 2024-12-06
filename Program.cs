@@ -12,7 +12,7 @@ using OnlineShop.Services.Interfaces;
 var builder = WebApplication.CreateBuilder(args);
 var config = builder.Configuration;
 
-// Add authentication
+// Adding authentication and authorization
 // FIXME: put in a separate file
 builder
     .Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -31,10 +31,7 @@ builder
             ),
         };
     });
-
-Console.WriteLine(
-    $"{config["JwtSettings:Issuer"]!} {config["JwtSettings:Audience"]} {config["JwtSettings:Key"]}"
-);
+builder.Services.AddAuthorization();
 
 // Add services to the container.
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
@@ -101,7 +98,7 @@ builder.Services.AddSwaggerGen(options =>
 
 // Add db context
 string? connectionString = builder.Configuration.GetConnectionString("SqliteConnection");
-builder.Services.AddDbContext<ProductDbContext>(opt => opt.UseSqlite(connectionString));
+builder.Services.AddDbContext<OnlineShopDbContext>(opt => opt.UseSqlite(connectionString));
 
 // My services
 builder.Services.AddTransient<IProductService, ProductService>();
@@ -111,7 +108,6 @@ builder.Services.AddTransient<ICartService, CartService>();
 // Add default controllers
 builder.Services.AddControllers();
 
-builder.Services.AddAuthorization();
 var app = builder.Build();
 
 app.UseHttpsRedirection();
@@ -129,29 +125,6 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
-
-/* app.UseExceptionHandler(errorApp => */
-/* { */
-/*     errorApp.Run(async context => */
-/*     { */
-/*         var exception = context.Features.Get<IExceptionHandlerFeature>()?.Error; */
-/**/
-/*         if (exception is BadHttpRequestException) */
-/*         { */
-/*             context.Response.StatusCode = StatusCodes.Status400BadRequest; */
-/*             await context.Response.WriteAsJsonAsync( */
-/*                 new { error = "Invalid JSON format", details = exception.Message } */
-/*             ); */
-/*         } */
-/*         else */
-/*         { */
-/*             context.Response.StatusCode = StatusCodes.Status500InternalServerError; */
-/*             await context.Response.WriteAsJsonAsync( */
-/*                 new { error = "An unexpected error occurred", details = exception?.Message } */
-/*             ); */
-/*         } */
-/*     }); */
-/* }); */
 
 // NOTE: Minimal apis was registered here
 app.MapProductController();
