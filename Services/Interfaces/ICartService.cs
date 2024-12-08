@@ -5,7 +5,7 @@ namespace OnlineShop.Services.Interfaces;
 public interface ICartService
 {
     Task<List<ProductDto>> GetCartProducts(int userId);
-    Task<bool> AddProductToCart(int productId, int userId, int quantity);
-    Task<bool> UpdateProductInCart(int productId, int userId, int quantity);
-    Task<bool> RemoveProductFromCart(int productId, int userId);
+    Task<bool> AddProductToCart(CartProductForm cartProduct);
+    Task<bool> UpdateProductInCart(CartProductForm cartProduct);
+    Task<bool> RemoveProductFromCart(CartProductDeleteFormDto cartProduct);
 }

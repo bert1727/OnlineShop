@@ -1,36 +1,14 @@
 using Microsoft.AspNetCore.Mvc;
-using OnlineShop.Models;
+using OnlineShop.Models.DTOs;
 using OnlineShop.Services.Interfaces;
 
 namespace OnlineShop.Controllers;
 
 [ApiController]
 [Route("[controller]")]
-public class CartController(ILogger<ProductController> logger, ICartService cartService)
-    : ControllerBase
+public class CartController(ICartService cartService) : ControllerBase
 {
-    // TODO: use logger
-    private readonly ILogger _logger = logger;
     private readonly ICartService _cartService = cartService;
-
-    [HttpDelete("{userId:int}/{productId:int}")]
-    public async Task<ActionResult> Delete(int userId, int productId)
-    {
-        return await _cartService.RemoveProductFromCart(productId, userId) ? Ok() : NotFound();
-    }
-
-    // FIXME: create a normal dto model for it
-    [HttpPut]
-    public async Task<ActionResult> Put([FromBody] RequestForm request)
-    {
-        return await _cartService.UpdateProductInCart(
-            request.ProductId,
-            request.UserId,
-            request.Quantity
-        )
-            ? Ok()
-            : NotFound();
-    }
 
     [HttpGet("{id:int}")]
     public async Task<ActionResult> GetById(int id)
@@ -39,14 +17,21 @@ public class CartController(ILogger<ProductController> logger, ICartService cart
     }
 
     [HttpPost]
-    public async Task<ActionResult> Post([FromBody] RequestForm request, ICartService cartService)
+    public async Task<ActionResult> Post(CartProductForm cartProduct)
     {
-        return await cartService.AddProductToCart(
-            request.ProductId,
-            request.UserId,
-            request.Quantity
-        )
-            ? Ok()
-            : NotFound();
+        return await _cartService.AddProductToCart(cartProduct) ? Ok() : NotFound();
+    }
+
+    [HttpPut]
+    public async Task<ActionResult> Put(CartProductForm cartProduct)
+    {
+        return await _cartService.UpdateProductInCart(cartProduct) ? Ok() : NotFound();
+    }
+
+    [HttpDelete]
+    // NOTE: or use query params here instead of CartProductDeleteFormDto
+    public async Task<ActionResult> Delete(CartProductDeleteFormDto cartProduct)
+    {
+        return await _cartService.RemoveProductFromCart(cartProduct) ? Ok() : NotFound();
     }
 }

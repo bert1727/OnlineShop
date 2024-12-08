@@ -48,10 +48,9 @@ public class UserService(OnlineShopDbContext context) : IUserService
         };
 
         await _context.Users.AddAsync(userNew);
+        await _context.SaveChangesAsync();
 
         var userDto = UserDtoUtils.UserToDto(userNew);
-
-        await _context.SaveChangesAsync();
 
         Log.Information("User was added and saved {@User}", userDto);
 
@@ -66,7 +65,6 @@ public class UserService(OnlineShopDbContext context) : IUserService
             return false;
 
         _context.Users.Remove(user);
-
         await _context.SaveChangesAsync();
 
         Log.Information("User with Id: {@id} was deleted", id);

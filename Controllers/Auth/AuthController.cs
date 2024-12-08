@@ -48,11 +48,12 @@ public class AuthController(IConfiguration configuration, IUserService userServi
     /* [HttpPost("login")] */
     private string GenerateToken(User user)
     {
+        ;
         var claims = new[]
         {
             new Claim(ClaimTypes.Name, user.Name),
             new Claim(ClaimTypes.Email, user.Email),
-            new Claim(ClaimTypes.Role, "Admin"),
+            new Claim(ClaimTypes.Role, user.Role.ToString()),
             new Claim("Id", user.Id.ToString()),
         };
 
@@ -64,7 +65,7 @@ public class AuthController(IConfiguration configuration, IUserService userServi
             issuer: _configuration["JwtSettings:Issuer"],
             audience: _configuration["JwtSettings:Audience"],
             claims,
-            expires: DateTime.Now.AddYears(7),
+            expires: DateTime.Now.AddHours(7),
             signingCredentials: creds
         );
         var tokenHandler = new JwtSecurityTokenHandler();

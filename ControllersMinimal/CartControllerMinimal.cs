@@ -1,6 +1,5 @@
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
-using OnlineShop.Models;
 using OnlineShop.Models.DTOs;
 using OnlineShop.Services.Interfaces;
 
@@ -12,52 +11,43 @@ public static class CartControllerMinimal
     {
         var endpoints = app.MapGroup("/api/cart").WithOpenApi();
 
-        endpoints.MapGet("/{id}", Get).WithSummary("Get all products in cart");
+        endpoints.MapGet("/{id}", GetById).WithSummary("Get all products in cart");
         endpoints.MapPost("/", Post).WithSummary("Add product to cart");
         endpoints.MapPut("/", Put).WithSummary("Update product");
-        endpoints.MapDelete("/{userId}/{productId}", Delete).WithSummary("Delete product");
+        endpoints.MapDelete("/", Delete).WithSummary("Delete product");
     }
 
-    private static async Task<List<ProductDto>> Get(int id, ICartService cartService)
+    private static async Task<List<ProductDto>> GetById(int id, ICartService cartService)
     {
         return await cartService.GetCartProducts(id);
     }
 
-    private static async Task<Results<Ok, NotFound>> Put(
-        [FromBody] RequestForm request,
+    private static async Task<Results<Ok, NotFound>> Post(
+        CartProductForm cartProduct,
         ICartService cartService
     )
     {
-        return await cartService.UpdateProductInCart(
-            request.ProductId,
-            request.UserId,
-            request.Quantity
-        )
+        return await cartService.AddProductToCart(cartProduct)
             ? TypedResults.Ok()
             : TypedResults.NotFound();
     }
 
-    private static async Task<Results<Ok, NotFound>> Post(
-        [FromBody] RequestForm request,
+    private static async Task<Results<Ok, NotFound>> Put(
+        CartProductForm cartProduct,
         ICartService cartService
     )
     {
-        return await cartService.AddProductToCart(
-            request.ProductId,
-            request.UserId,
-            request.Quantity
-        )
+        return await cartService.UpdateProductInCart(cartProduct)
             ? TypedResults.Ok()
             : TypedResults.NotFound();
     }
 
     private static async Task<Results<Ok, NotFound>> Delete(
-        int userId,
-        int productId,
+        [FromBody] CartProductDeleteFormDto cartDeleteProduct,
         ICartService cartService
     )
     {
-        return await cartService.RemoveProductFromCart(productId, userId)
+        return await cartService.RemoveProductFromCart(cartDeleteProduct)
             ? TypedResults.Ok()
             : TypedResults.NotFound();
     }

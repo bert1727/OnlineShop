@@ -1,10 +1,10 @@
 # TO-DO
 
-- [ ] Implement minimal and traditional api
+- [x] Implement minimal and traditional controllers
   - [ ] Rename methods in controllers
 - [ ] Add validation for models
 - [ ] Add authorization and authentication
-- [ ] Provide logging
+- [x] Provide logging
 - [ ] Write documentation
 - [ ] Write tests
 - [ ] Change Request form to DTO model

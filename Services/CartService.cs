@@ -13,10 +13,10 @@ public class CartService(OnlineShopDbContext context) : ICartService
     private readonly OnlineShopDbContext _context = context;
 
     // TODO: change return type
-    public async Task<bool> AddProductToCart(int productId, int userId, int quantity)
+    public async Task<bool> AddProductToCart(CartProductForm cartProduct)
     {
         var ShoppingCartProducts = await _context.Carts.FirstOrDefaultAsync(x =>
-            x.UserId == userId
+            x.UserId == cartProduct.UserId
         );
 
         if (ShoppingCartProducts == null)
@@ -24,7 +24,7 @@ public class CartService(OnlineShopDbContext context) : ICartService
         /* return "User or shopping cart not found"; */
         Log.Information("Cart was found");
 
-        var product = await _context.Products.FindAsync(productId);
+        var product = await _context.Products.FindAsync(cartProduct.ProductId);
 
         if (product == null)
             return false;
@@ -32,12 +32,12 @@ public class CartService(OnlineShopDbContext context) : ICartService
         Log.Information("Product was found");
 
         var existingProductInCart = ShoppingCartProducts.ShoppingCartProducts.FirstOrDefault(x =>
-            x.ProductId == productId
+            x.ProductId == cartProduct.ProductId
         );
 
         if (existingProductInCart != null)
         {
-            existingProductInCart.Quantity += quantity;
+            existingProductInCart.Quantity += cartProduct.Quantity;
 
             await _context.SaveChangesAsync();
 
@@ -52,8 +52,8 @@ public class CartService(OnlineShopDbContext context) : ICartService
                 new ShoppingCartProduct
                 {
                     Product = product,
-                    ProductId = productId,
-                    Quantity = quantity,
+                    ProductId = cartProduct.ProductId,
+                    Quantity = cartProduct.Quantity,
                 }
             );
             await _context.SaveChangesAsync();
@@ -96,13 +96,13 @@ public class CartService(OnlineShopDbContext context) : ICartService
         return res;
     }
 
-    public async Task<bool> RemoveProductFromCart(int productId, int userId)
+    public async Task<bool> RemoveProductFromCart(CartProductDeleteFormDto cartProduct)
     {
         var user = await _context
             .Users.Include(static u => u.ShoppingCart)
             .ThenInclude(static x => x.ShoppingCartProducts)
             .ThenInclude(static x => x.Product)
-            .FirstOrDefaultAsync(u => u.Id == userId);
+            .FirstOrDefaultAsync(u => u.Id == cartProduct.UserId);
 
         if (user == null)
         {
@@ -111,7 +111,7 @@ public class CartService(OnlineShopDbContext context) : ICartService
         }
 
         var product = user.ShoppingCart.ShoppingCartProducts.FirstOrDefault(x =>
-            x.ProductId == productId
+            x.ProductId == cartProduct.ProductId
         );
 
         if (product != null)
@@ -125,27 +125,27 @@ public class CartService(OnlineShopDbContext context) : ICartService
         return true;
     }
 
-    public async Task<bool> UpdateProductInCart(int productId, int userId, int quantity)
+    public async Task<bool> UpdateProductInCart(CartProductForm cartProduct)
     {
         var user = await _context
             .Users.Include(static x => x.ShoppingCart)
             .ThenInclude(static x => x.ShoppingCartProducts)
             .ThenInclude(static x => x.Product)
-            .FirstOrDefaultAsync(u => u.Id == userId);
+            .FirstOrDefaultAsync(u => u.Id == cartProduct.UserId);
 
         if (user == null || user.ShoppingCart == null)
             return false;
         /* return "User or shopping cart not found"; */
         Log.Information("User was found");
 
-        var product = await _context.Products.FindAsync(productId);
+        var product = await _context.Products.FindAsync(cartProduct.ProductId);
         if (product == null)
             return false;
         /* return "Product not found"; */
         Log.Information("Product was found");
 
         var existingProductInCart = user.ShoppingCart.ShoppingCartProducts.FirstOrDefault(x =>
-            x.ProductId == productId
+            x.ProductId == cartProduct.ProductId
         );
 
         if (existingProductInCart == null)
@@ -155,7 +155,7 @@ public class CartService(OnlineShopDbContext context) : ICartService
             /* return "Prouduct doesn't exist in cart"; */
         }
 
-        existingProductInCart.Quantity += quantity;
+        existingProductInCart.Quantity += cartProduct.Quantity;
 
         await _context.SaveChangesAsync();
 

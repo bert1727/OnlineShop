@@ -43,11 +43,11 @@ public class ProductController(ILogger<ProductController> logger, IProductServic
         return product is null ? NotFound() : Ok(product);
     }
 
-    [HttpDelete("{id:int}")]
-    public async Task<ActionResult> Delete(int id)
+    [HttpPost]
+    public async Task<ActionResult> Post(ProductDto product)
     {
-        bool isdDeleted = await _productService.DeleteProduct(id);
-        return isdDeleted ? NoContent() : NotFound();
+        var createdProduct = await _productService.CreateProduct(product);
+        return Ok(createdProduct);
     }
 
     [HttpPut("{id:int}")]
@@ -61,16 +61,16 @@ public class ProductController(ILogger<ProductController> logger, IProductServic
         return isUpdated ? NoContent() : NotFound();
     }
 
-    [HttpPost]
-    public async Task<ActionResult> Post(ProductDto product)
+    [HttpDelete("{id:int}")]
+    public async Task<ActionResult> Delete(int id)
     {
-        var createdProduct = await _productService.CreateProduct(product);
-        return Ok(createdProduct);
+        bool isdDeleted = await _productService.DeleteProduct(id);
+        return isdDeleted ? NoContent() : NotFound();
     }
 
     // NOTE: just test an Authorization
     [HttpGet("getallauth")]
-    [Authorize]
+    [Authorize(Roles = "Admin")]
     [EndpointSummary("Получить все продукты, только аторизованные пользователи")]
     public ActionResult GetAllProducts()
     {
@@ -81,7 +81,7 @@ public class ProductController(ILogger<ProductController> logger, IProductServic
 
     [HttpPost("postauth")]
     [Authorize]
-    public ActionResult AddProduct([FromBody] string product)
+    public ActionResult AddProduct(string product)
     {
         Console.WriteLine("Postauth is running");
         return Ok($"Product {product} added");

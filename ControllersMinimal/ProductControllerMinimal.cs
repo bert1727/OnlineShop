@@ -28,29 +28,6 @@ public static class ProductControllerMinimal
         return TypedResults.Ok(products);
     }
 
-    private static async Task<Results<NoContent, NotFound>> Delete(
-        int id,
-        IProductService productService
-    )
-    {
-        bool isdDeleted = await productService.DeleteProduct(id);
-        return isdDeleted ? TypedResults.NoContent() : TypedResults.NotFound();
-    }
-
-    private static async Task<Results<NoContent, NotFound, BadRequest>> Put(
-        int id,
-        ProductDto product,
-        IProductService productService
-    )
-    {
-        if (id != product.Id)
-        {
-            return TypedResults.BadRequest();
-        }
-        bool isUpdated = await productService.UpdateProduct(id, product);
-        return isUpdated ? TypedResults.NoContent() : TypedResults.NotFound();
-    }
-
     private static async Task<Results<Ok<ProductDto>, NotFound>> GetById(
         int id,
         IProductService productService
@@ -67,5 +44,28 @@ public static class ProductControllerMinimal
     {
         var createdProduct = await productService.CreateProduct(product);
         return TypedResults.Ok(createdProduct);
+    }
+
+    private static async Task<Results<NoContent, NotFound, BadRequest>> Put(
+        int id,
+        ProductDto product,
+        IProductService productService
+    )
+    {
+        if (id != product.Id)
+        {
+            return TypedResults.BadRequest();
+        }
+        bool isUpdated = await productService.UpdateProduct(id, product);
+        return isUpdated ? TypedResults.NoContent() : TypedResults.NotFound();
+    }
+
+    private static async Task<Results<NoContent, NotFound>> Delete(
+        int id,
+        IProductService productService
+    )
+    {
+        bool isdDeleted = await productService.DeleteProduct(id);
+        return isdDeleted ? TypedResults.NoContent() : TypedResults.NotFound();
     }
 }

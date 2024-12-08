@@ -8,8 +8,10 @@ using Serilog;
 var builder = WebApplication.CreateBuilder(args);
 
 // Setup logging with Serilog
-Log.Logger = new LoggerConfiguration().ReadFrom.Configuration(builder.Configuration).CreateLogger();
-builder.Services.AddSerilog();
+builder.Services.SerilogLoggerService(builder.Configuration);
+
+// Bootstrap logging
+/* builder.Host.SerilogLoggerServiceGlobal(); */
 
 Log.Information("App is running");
 

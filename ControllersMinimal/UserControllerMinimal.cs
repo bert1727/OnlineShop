@@ -17,22 +17,10 @@ public static class UserControllerMinimal
         endpoints.MapDelete("/{id}", Delete).WithSummary("Delete user");
     }
 
-    private static async Task<Results<NoContent, NotFound>> Delete(int id, IUserService userService)
+    private static async Task<Ok<List<UserDto>>> Get(IUserService userService)
     {
-        bool isDeleted = await userService.DeleteUser(id);
-        return isDeleted ? TypedResults.NoContent() : TypedResults.NotFound();
-    }
-
-    private static async Task<Results<NoContent, NotFound, BadRequest>> Put(
-        int id,
-        UserDto user,
-        IUserService userService
-    )
-    {
-        if (id != user.Id)
-            return TypedResults.BadRequest();
-        bool isUpdated = await userService.UpdateUser(id, user);
-        return isUpdated ? TypedResults.NoContent() : TypedResults.NotFound();
+        var users = await userService.GetUsers();
+        return TypedResults.Ok(users);
     }
 
     private static async Task<Results<Ok<UserDto>, NotFound>> GetById(
@@ -50,9 +38,21 @@ public static class UserControllerMinimal
         return TypedResults.Ok(userNew);
     }
 
-    private static async Task<Ok<List<UserDto>>> Get(IUserService userService)
+    private static async Task<Results<NoContent, NotFound, BadRequest>> Put(
+        int id,
+        UserDto user,
+        IUserService userService
+    )
     {
-        var users = await userService.GetUsers();
-        return TypedResults.Ok(users);
+        if (id != user.Id)
+            return TypedResults.BadRequest();
+        bool isUpdated = await userService.UpdateUser(id, user);
+        return isUpdated ? TypedResults.NoContent() : TypedResults.NotFound();
+    }
+
+    private static async Task<Results<NoContent, NotFound>> Delete(int id, IUserService userService)
+    {
+        bool isDeleted = await userService.DeleteUser(id);
+        return isDeleted ? TypedResults.NoContent() : TypedResults.NotFound();
     }
 }
