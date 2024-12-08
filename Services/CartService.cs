@@ -4,6 +4,7 @@ using OnlineShop.Models;
 using OnlineShop.Models.DTOs;
 using OnlineShop.Services.Interfaces;
 using OnlineShop.Utilities;
+using Serilog;
 
 namespace OnlineShop.Services;
 
@@ -20,11 +21,14 @@ public class CartService(OnlineShopDbContext context) : ICartService
         if (ShoppingCartProducts == null)
             return false;
         /* return "User or shopping cart not found"; */
+        Log.Information("Cart was found");
 
         var product = await _context.Products.FindAsync(productId);
+
         if (product == null)
             return false;
         /* return "Product not found"; */
+        Log.Information("Product was found");
 
         var existingProductInCart = ShoppingCartProducts.ShoppingCartProducts.FirstOrDefault(x =>
             x.ProductId == productId
@@ -34,6 +38,7 @@ public class CartService(OnlineShopDbContext context) : ICartService
         {
             existingProductInCart.Quantity += quantity;
             await _context.SaveChangesAsync();
+            Log.Information("Quantity product in cart updated");
             return true;
             /* return "Product updated in cart"; */
         }
@@ -48,28 +53,42 @@ public class CartService(OnlineShopDbContext context) : ICartService
                 }
             );
             await _context.SaveChangesAsync();
+            Log.Information("New product added to cart");
             return true;
         }
     }
 
     public async Task<List<ProductDto>> GetCartProducts(int userId)
     {
-        var a = await _context.CartProducts.Where(x => x.ShoppingCartId == userId).ToListAsync();
+        var allProductsInCart = await _context
+            .CartProducts.Where(x => x.ShoppingCartId == userId)
+            .ToListAsync();
 
-        Console.WriteLine($"Test {a}, size of a: {a.Count}");
-        var b = a.Select(x => x.ProductId).ToList();
-        Console.WriteLine($"Cart was found and products was found, size: {b.Count}");
+        Log.Information("Count of products in cart {@count}", allProductsInCart.Count);
+
+        var productsInCart = allProductsInCart.Select(x => x.ProductId).ToList();
+
+        Log.Information(
+            "Cart was found and products in cart was found, count: {@count}",
+            productsInCart.Count
+        );
+
         var res = new List<ProductDto>();
-        foreach (int? item in b)
+        foreach (int? item in productsInCart)
         {
             if (item == null)
                 continue;
+
             var product = await _context.Products.FirstOrDefaultAsync(x => x.Id == item);
+
+            // there is no null product probably
             if (product == null)
                 continue;
+
             res.Add(ProductDtoUtils.ProductToDto(product));
         }
-        Console.WriteLine(res.ToString());
+
+        Log.Information("Products in cart are {@res}", res);
         return res;
     }
 
@@ -80,18 +99,25 @@ public class CartService(OnlineShopDbContext context) : ICartService
             .ThenInclude(static x => x.ShoppingCartProducts)
             .ThenInclude(static x => x.Product)
             .FirstOrDefaultAsync(u => u.Id == userId);
+
         if (user == null)
         {
+            Log.Information("Product not found");
             return false;
         }
+
         var product = user.ShoppingCart.ShoppingCartProducts.FirstOrDefault(x =>
             x.ProductId == productId
         );
+
         if (product != null)
         {
             user.ShoppingCart.ShoppingCartProducts.Remove(product);
             await _context.SaveChangesAsync();
         }
+
+        Log.Information("Product was deleted");
+
         return true;
     }
 
@@ -106,11 +132,13 @@ public class CartService(OnlineShopDbContext context) : ICartService
         if (user == null || user.ShoppingCart == null)
             return false;
         /* return "User or shopping cart not found"; */
+        Log.Information("User was found");
 
         var product = await _context.Products.FindAsync(productId);
         if (product == null)
             return false;
         /* return "Product not found"; */
+        Log.Information("Product was found");
 
         var existingProductInCart = user.ShoppingCart.ShoppingCartProducts.FirstOrDefault(x =>
             x.ProductId == productId
@@ -118,11 +146,20 @@ public class CartService(OnlineShopDbContext context) : ICartService
 
         if (existingProductInCart == null)
         {
+            Log.Information("No product in cart");
             return false;
             /* return "Prouduct doesn't exist in cart"; */
         }
+
         existingProductInCart.Quantity += quantity;
+
         await _context.SaveChangesAsync();
+
+        Log.Information(
+            "Quantity of product in cart updated: {@quantity}",
+            existingProductInCart.Quantity
+        );
+
         return true;
         /* return "Product updated in cart"; */
     }

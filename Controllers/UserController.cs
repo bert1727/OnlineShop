@@ -1,7 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using OnlineShop.Models.DTOs;
 using OnlineShop.Services.Interfaces;
-using Serilog;
 
 namespace OnlineShop.Controllers;
 
@@ -9,7 +8,6 @@ namespace OnlineShop.Controllers;
 [Route("[controller]")]
 public class UserController(IUserService userService) : ControllerBase
 {
-    // TODO: use logger
     private readonly IUserService _userService = userService;
 
     [HttpDelete("{id:int}")]
@@ -39,7 +37,6 @@ public class UserController(IUserService userService) : ControllerBase
     public async Task<ActionResult> Post(UserCreationDto userDto)
     {
         var userNew = await _userService.AddUser(userDto);
-        Log.Information("asdf: {@userNew}", userNew);
         return Ok(userNew);
     }
 

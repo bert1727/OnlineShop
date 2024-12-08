@@ -4,6 +4,7 @@ using OnlineShop.Models;
 using OnlineShop.Models.DTOs;
 using OnlineShop.Services.Interfaces;
 using OnlineShop.Utilities;
+using Serilog;
 
 namespace OnlineShop.Services;
 
@@ -14,12 +15,20 @@ public class ProductService(OnlineShopDbContext context) : IProductService
     public async Task<List<ProductDto>> GetProducts()
     {
         var products = await _context.Products.ToListAsync();
-        return products.Select(ProductDtoUtils.ProductToDto).ToList();
+
+        var productsDto = products.Select(ProductDtoUtils.ProductToDto).ToList();
+
+        Log.Information("All products: {@products}", productsDto);
+
+        return productsDto;
     }
 
     public async Task<ProductDto?> GetProductById(int id)
     {
         var product = await _context.Products.FirstOrDefaultAsync(x => x.Id == id);
+
+        Log.Information("Product with Id: {@id} was found", id);
+
         return product is null ? null : ProductDtoUtils.ProductToDto(product);
     }
 
@@ -35,8 +44,12 @@ public class ProductService(OnlineShopDbContext context) : IProductService
 
         await _context.Products.AddAsync(productNew);
         await _context.SaveChangesAsync();
-        Console.WriteLine($"Id is:{productNew.Id}", productNew.Id);
-        return ProductDtoUtils.ProductToDto(productNew);
+
+        var productDto = ProductDtoUtils.ProductToDto(productNew);
+
+        Log.Information("Product was added and saved {@Product}", productDto);
+
+        return productDto;
     }
 
     // NOTE: возможно тут в отдельную функцию вынести проверку на существование объекта, ну или нет
@@ -51,12 +64,14 @@ public class ProductService(OnlineShopDbContext context) : IProductService
             await _context.SaveChangesAsync();
             return true;
         }
+
         return false;
     }
 
     public async Task<bool> UpdateProduct(int id, ProductDto product)
     {
         var productUpdate = await _context.Products.FirstOrDefaultAsync(x => x.Id == id);
+
         if (productUpdate is null)
             return false;
 
@@ -69,9 +84,11 @@ public class ProductService(OnlineShopDbContext context) : IProductService
         try
         {
             await _context.SaveChangesAsync();
+            Log.Information("Product with Id: {@id} was updated", id);
         }
-        catch (DbUpdateConcurrencyException) when (_context.Products.Any(x => x.Id == id))
+        catch (DbUpdateConcurrencyException e) when (_context.Products.Any(x => x.Id == id))
         {
+            Log.Information("Failed to update product with Id: {@id}, error: {@err}", id, e);
             return false;
         }
 

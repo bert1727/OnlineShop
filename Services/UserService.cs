@@ -9,10 +9,9 @@ using Serilog;
 
 namespace OnlineShop.Services;
 
-public class UserService(ILogger<UserService> logger, OnlineShopDbContext context) : IUserService
+public class UserService(OnlineShopDbContext context) : IUserService
 {
     private readonly OnlineShopDbContext _context = context;
-    private readonly ILogger<UserService> _logger = logger;
 
     public async Task<User?> GetUserByEmail(string email)
     {
@@ -24,7 +23,11 @@ public class UserService(ILogger<UserService> logger, OnlineShopDbContext contex
     {
         var users = await _context.Users.ToListAsync();
 
-        return users.Select(UserDtoUtils.UserToDto).ToList();
+        var usersDto = users.Select(UserDtoUtils.UserToDto).ToList();
+
+        Log.Information("All users: {@users}", usersDto);
+
+        return usersDto;
     }
 
     public async Task<UserDto?> GetUserById(int id)
@@ -43,45 +46,31 @@ public class UserService(ILogger<UserService> logger, OnlineShopDbContext contex
             Role = Role.Customer,
             ShoppingCart = new ShoppingCart(),
         };
-        /* var shoppingCartnew = new ShoppingCart { }; */
-        /* userNew.ShoppingCart = shoppingCartnew; */
-        /* userNew.ShoppingCartId = shoppingCartnew.Id; */
+
         await _context.Users.AddAsync(userNew);
+
         var userDto = UserDtoUtils.UserToDto(userNew);
-        Console.WriteLine($"Lalalla: {userDto}");
-        Log.Information("User was added {@user}", userDto);
-        /* _logger.LogInformation("Ultra user {User}", userDto); */
+
         await _context.SaveChangesAsync();
-        Log.Information("User was saved {@user}", userDto);
 
-        /* userNew.ShoppingCart.UserId = userNew.Id; */
-        /* await _context.SaveChangesAsync(); */
-        /* var shoppingCartNew = new ShoppingCart { UserId = userNew.Id }; */
-        /* userNew.ShoppingCart = shoppingCartNew; */
-        /* userNew.ShoppingCartId = shoppingCartNew.Id; */
-        /* ShoppingCart = new ShoppingCart { UserId = userNew.Id } */
+        Log.Information("User was added and saved {@User}", userDto);
 
-        Console.WriteLine(userNew.Id);
-
-        /* userNew.ShoppingCartId = shoppingCartNew.Id; */
-        /* userNew.ShoppingCartId = shoppingCartNew.Id; */
-        /* _logger.LogInformation("User was added"); */
-        /* await _context.Carts.AddAsync(shoppingCartNew); */
-        /* await _context.SaveChangesAsync(); */
-        /* _logger.LogInformation($"{userNew.Id}"); */
-        /* _logger.LogInformation("User was saved"); */
-
-        return UserDtoUtils.UserToDto(userNew);
+        return userDto;
     }
 
     public async Task<bool> DeleteUser(int id)
     {
         var user = _context.Users.FirstOrDefault(x => x.Id == id);
+
         if (user is null)
             return false;
 
         _context.Users.Remove(user);
+
         await _context.SaveChangesAsync();
+
+        Log.Information("User with Id: {@id} was deleted", id);
+
         return true;
     }
 
@@ -97,12 +86,15 @@ public class UserService(ILogger<UserService> logger, OnlineShopDbContext contex
         userUpdate.Email = user.Email;
         userUpdate.Password = user.Password;
         userUpdate.Role = user.Role;
+
         try
         {
             await _context.SaveChangesAsync();
+            Log.Information("User with Id: {@id} was updated", id);
         }
-        catch (DbUpdateConcurrencyException) when (_context.Users.Any(x => x.Id == id))
+        catch (DbUpdateConcurrencyException e) when (_context.Users.Any(x => x.Id == id))
         {
+            Log.Error("Failed to update user with Id: {@id}, error: {@e}", id, e);
             return false;
         }
 
