@@ -10,6 +10,6 @@ public class User
     public string Password { get; set; } = ""; // NOTE: его надо захэшировать и поля обязательные долджны быть
     public string Email { get; set; } = "";
 
-    // Foreign key
+    // Navigation property
     public ShoppingCart ShoppingCart { get; set; } = null!;
 }

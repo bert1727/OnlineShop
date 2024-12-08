@@ -9,11 +9,12 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
 {
     public void Configure(EntityTypeBuilder<User> builder)
     {
-        // 1 to 1      user to ShoppingCart
+        // 1 to 1 user to ShoppingCart
         builder
             .HasOne(static x => x.ShoppingCart)
             .WithOne(static x => x.User)
-            .HasForeignKey<ShoppingCart>(static x => x.UserId);
+            .HasForeignKey<ShoppingCart>(static x => x.UserId)
+            .OnDelete(DeleteBehavior.Cascade);
 
         builder.Property(static x => x.Role).HasConversion<string>();
 

@@ -5,17 +5,19 @@ using OnlineShop.Models.DTOs;
 using Onlineshop.Models.Enums;
 using OnlineShop.Services.Interfaces;
 using OnlineShop.Utilities;
+using Serilog;
 
 namespace OnlineShop.Services;
 
-public class UserService(OnlineShopDbContext context) : IUserService
+public class UserService(ILogger<UserService> logger, OnlineShopDbContext context) : IUserService
 {
     private readonly OnlineShopDbContext _context = context;
+    private readonly ILogger<UserService> _logger = logger;
 
-    public async Task<UserDto?> GetUserByEmail(string email)
+    public async Task<User?> GetUserByEmail(string email)
     {
         var user = await _context.Users.FirstOrDefaultAsync(x => x.Email == email);
-        return user != null ? UserDtoUtils.UserToDto(user) : null;
+        return user;
     }
 
     public async Task<List<UserDto>> GetUsers()
@@ -38,15 +40,36 @@ public class UserService(OnlineShopDbContext context) : IUserService
             Name = user.Name,
             Email = user.Email,
             Password = user.Password,
-            Role = Role.Guest,
+            Role = Role.Customer,
+            ShoppingCart = new ShoppingCart(),
         };
-
+        /* var shoppingCartnew = new ShoppingCart { }; */
+        /* userNew.ShoppingCart = shoppingCartnew; */
+        /* userNew.ShoppingCartId = shoppingCartnew.Id; */
         await _context.Users.AddAsync(userNew);
-        Console.WriteLine(userNew.Id);
-        userNew.ShoppingCart = new ShoppingCart { UserId = userNew.Id };
-        Console.WriteLine("User was addded");
+        var userDto = UserDtoUtils.UserToDto(userNew);
+        Console.WriteLine($"Lalalla: {userDto}");
+        Log.Information("User was added {@user}", userDto);
+        /* _logger.LogInformation("Ultra user {User}", userDto); */
         await _context.SaveChangesAsync();
-        Console.WriteLine("User was saved");
+        Log.Information("User was saved {@user}", userDto);
+
+        /* userNew.ShoppingCart.UserId = userNew.Id; */
+        /* await _context.SaveChangesAsync(); */
+        /* var shoppingCartNew = new ShoppingCart { UserId = userNew.Id }; */
+        /* userNew.ShoppingCart = shoppingCartNew; */
+        /* userNew.ShoppingCartId = shoppingCartNew.Id; */
+        /* ShoppingCart = new ShoppingCart { UserId = userNew.Id } */
+
+        Console.WriteLine(userNew.Id);
+
+        /* userNew.ShoppingCartId = shoppingCartNew.Id; */
+        /* userNew.ShoppingCartId = shoppingCartNew.Id; */
+        /* _logger.LogInformation("User was added"); */
+        /* await _context.Carts.AddAsync(shoppingCartNew); */
+        /* await _context.SaveChangesAsync(); */
+        /* _logger.LogInformation($"{userNew.Id}"); */
+        /* _logger.LogInformation("User was saved"); */
 
         return UserDtoUtils.UserToDto(userNew);
     }

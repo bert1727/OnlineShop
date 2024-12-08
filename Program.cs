@@ -6,11 +6,90 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using OnlineShop.Context;
 using OnlineShop.ControllersMinimal;
+using OnlineShop.Models.DTOs;
+using Onlineshop.Models.Enums;
 using OnlineShop.Services;
 using OnlineShop.Services.Interfaces;
+using Serilog;
+using Serilog.Events;
+using Serilog.Formatting.Compact;
+using Serilog.Formatting.Json;
+using Serilog.Templates;
+using Serilog.Templates.Themes;
 
 var builder = WebApplication.CreateBuilder(args);
 var config = builder.Configuration;
+
+Log.Logger = new LoggerConfiguration().ReadFrom.Configuration(config).CreateBootstrapLogger();
+
+/* builder.Services.AddSerilog( */
+/*     (services, lc) => */
+/*         lc */
+/*             .ReadFrom.Configuration(builder.Configuration) */
+/*             .ReadFrom.Services(services) */
+/*             .Enrich.FromLogContext() */
+/*             .WriteTo.Console( */
+/*                 new ExpressionTemplate( */
+/*                     // Include trace and span ids when present. */
+/*                     "[{@t:HH:mm:ss} {@l:u3}{#if @tr is not null} ({substring(@tr,0,4)}:{substring(@sp,0,4)}){#end}] {@m}\n{@x}", */
+/*                     theme: TemplateTheme.Code */
+/*                 ) */
+/*             ) */
+/* ); */
+/**/
+/* builder.Services.AddSerilog(); */
+
+/* Log.Logger = new LoggerConfiguration().WriteTo.Console().CreateLogger(); */
+/* builder.Services.AddSerilog( */
+/*     (services, lc) => */
+/*         lc */
+/*             .ReadFrom.Configuration(config) */
+/*             .ReadFrom.Services(services) */
+/*             .Enrich.FromLogContext() */
+/*             .WriteTo.Console() */
+/* new ExpressionTemplate( */
+// Include trace and span ids when present.
+/* "[{@t:HH:mm:ss} {@l:u3}{#if @tr is not null} ({substring(@tr,0,4)}:{substring(@sp,0,4)}){#end}] {@m}\n{@x}", */
+/* theme: TemplateTheme.Code */
+/* ); */
+
+builder.Host.UseSerilog(
+    (context, config) =>
+    {
+        /* config.ReadFrom.Configuration(context.Configuration); */
+        config
+            .MinimumLevel.Information()
+            .WriteTo.Console()
+            .WriteTo.File(
+                new JsonFormatter(),
+                "./Logs/logs.json",
+                rollingInterval: RollingInterval.Day
+            );
+    }
+);
+
+/* builder.Services.AddSerilog(); */
+Log.Error("Приложение запустилось!!!");
+
+/* Log.Logger = new LoggerConfiguration() */
+/*     .MinimumLevel.Information() */
+/*     .WriteTo.Console() */
+/*     .WriteTo.File( */
+/*         new CompactJsonFormatter(), */
+/*         "./Logs/logs.json", */
+/*         rollingInterval: RollingInterval.Day */
+/*     ) */
+/*     .CreateLogger(); */
+
+Log.Information(
+    "user is {@user}",
+    new UserDto
+    {
+        Name = "213",
+        Id = 1,
+        Role = Role.Admin,
+    }
+);
 
 // Adding authentication and authorization
 // FIXME: put in a separate file
@@ -60,6 +139,7 @@ builder.Services.AddSwaggerGen(options =>
             },
         }
     );
+    options.SwaggerDoc("v2", new OpenApiInfo { Title = "My API - V2", Version = "v2" });
 
     options.AddSecurityDefinition(
         "Bearer",
@@ -91,7 +171,6 @@ builder.Services.AddSwaggerGen(options =>
         }
     );
 
-    // using System.Reflection;
     string xmlFilename = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
     options.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, xmlFilename));
 });
@@ -109,6 +188,8 @@ builder.Services.AddTransient<ICartService, CartService>();
 builder.Services.AddControllers();
 
 var app = builder.Build();
+
+app.UseSerilogRequestLogging();
 
 app.UseHttpsRedirection();
 

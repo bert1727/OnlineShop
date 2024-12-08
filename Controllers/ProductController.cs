@@ -21,6 +21,7 @@ public class ProductController(ILogger<ProductController> logger, IProductServic
     /// <response code="200">Возвращает все продукты существующие</response>
     /// <response code="500">Внутренняя ошибка сервера.</response>
     [HttpGet]
+    /* [ApiExplorerSettings(GroupName = "v2")] */
     public async Task<ActionResult> Get()
     {
         _logger.LogInfoProductController("Get is running");
@@ -70,6 +71,7 @@ public class ProductController(ILogger<ProductController> logger, IProductServic
     // NOTE: just test an Authorization
     [HttpGet("getallauth")]
     [Authorize]
+    [EndpointSummary("Получить все продукты, только аторизованные пользователи")]
     public ActionResult GetAllProducts()
     {
         Console.WriteLine("GetAllProducts is running");

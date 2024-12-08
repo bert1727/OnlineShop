@@ -3,13 +3,15 @@ using System.Security.Claims;
 using System.Text;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
+using OnlineShop.Models;
 using OnlineShop.Models.DTOs;
 using OnlineShop.Services.Interfaces;
 
 namespace OnlineShop.Controllers.Auth;
 
 [ApiController]
-[Route("api")]
+[Route("auth")]
+[ApiExplorerSettings(GroupName = "auth")]
 public class AuthController(IConfiguration configuration, IUserService userService) : ControllerBase
 {
     private readonly IConfiguration _configuration = configuration;
@@ -30,27 +32,28 @@ public class AuthController(IConfiguration configuration, IUserService userServi
     }
 
     [HttpPost("signin")]
-    public async Task<ActionResult> SignIn(UserDto userDto)
+    public async Task<ActionResult> SignIn(UserCreationDto userDto)
     {
-        var user = await _userService.GetUserById(userDto.Id);
+        var user = await _userService.GetUserByEmail(userDto.Email);
         if (user == null || user.Password != userDto.Password || user.Email != userDto.Email)
         {
             return Unauthorized("Invalid password/credentials");
         }
 
-        string token = GenerateToken(userDto);
+        string token = GenerateToken(user);
+
         return Ok(new { token });
     }
 
     /* [HttpPost("login")] */
-    private string GenerateToken(UserDto userDto)
+    private string GenerateToken(User user)
     {
         var claims = new[]
         {
-            new Claim(ClaimTypes.Name, userDto.Name),
-            new Claim(ClaimTypes.Email, userDto.Email),
+            new Claim(ClaimTypes.Name, user.Name),
+            new Claim(ClaimTypes.Email, user.Email),
             new Claim(ClaimTypes.Role, "Admin"),
-            new Claim("Id", userDto.Id.ToString()),
+            new Claim("Id", user.Id.ToString()),
         };
 
         var securitykey = new SymmetricSecurityKey(
