@@ -61,7 +61,9 @@ public class ProductService(OnlineShopDbContext context) : IProductService
         if (product != null)
         {
             _context.Products.Remove(product);
+
             await _context.SaveChangesAsync();
+
             return true;
         }
 
@@ -94,8 +96,4 @@ public class ProductService(OnlineShopDbContext context) : IProductService
 
         return true;
     }
-    /* private bool TodoItemExists(int id) */
-    /* { */
-    /*     return _context.ToDoItems.Any(x => x.Id == id); */
-    /* } */
 }

@@ -11,7 +11,7 @@ namespace OnlineShop.Controllers.Auth;
 
 [ApiController]
 [Route("auth")]
-[ApiExplorerSettings(GroupName = "auth")]
+/* [ApiExplorerSettings(GroupName = "auth")] */
 public class AuthController(IConfiguration configuration, IUserService userService) : ControllerBase
 {
     private readonly IConfiguration _configuration = configuration;

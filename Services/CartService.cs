@@ -12,6 +12,7 @@ public class CartService(OnlineShopDbContext context) : ICartService
 {
     private readonly OnlineShopDbContext _context = context;
 
+    // TODO: change return type
     public async Task<bool> AddProductToCart(int productId, int userId, int quantity)
     {
         var ShoppingCartProducts = await _context.Carts.FirstOrDefaultAsync(x =>
@@ -37,8 +38,11 @@ public class CartService(OnlineShopDbContext context) : ICartService
         if (existingProductInCart != null)
         {
             existingProductInCart.Quantity += quantity;
+
             await _context.SaveChangesAsync();
+
             Log.Information("Quantity product in cart updated");
+
             return true;
             /* return "Product updated in cart"; */
         }
