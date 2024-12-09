@@ -1,6 +1,5 @@
 using Serilog;
 using Serilog.Formatting.Compact;
-using Serilog.Formatting.Json;
 
 namespace OnlineShop.Services;
 
@@ -15,7 +14,7 @@ public static class LoggerService
         services.AddSerilog();
     }
 
-    public static void SerilogLoggerServiceGlobal(this IHostBuilder host)
+    public static void SerilogLoggerGlobalHost(this IHostBuilder host)
     {
         host.UseSerilog(
             (context, config) =>

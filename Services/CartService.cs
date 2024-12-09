@@ -15,11 +15,11 @@ public class CartService(OnlineShopDbContext context) : ICartService
     // TODO: change return type
     public async Task<bool> AddProductToCart(CartProductForm cartProduct)
     {
-        var ShoppingCartProducts = await _context.Carts.FirstOrDefaultAsync(x =>
+        var userShoppingCart = await _context.Carts.FirstOrDefaultAsync(x =>
             x.UserId == cartProduct.UserId
         );
 
-        if (ShoppingCartProducts == null)
+        if (userShoppingCart == null)
             return false;
         /* return "User or shopping cart not found"; */
         Log.Information("Cart was found");
@@ -31,15 +31,31 @@ public class CartService(OnlineShopDbContext context) : ICartService
         /* return "Product not found"; */
         Log.Information("Product was found");
 
-        var existingProductInCart = ShoppingCartProducts.ShoppingCartProducts.FirstOrDefault(x =>
+        var existingProductInCart = userShoppingCart.ShoppingCartProducts.FirstOrDefault(x =>
             x.ProductId == cartProduct.ProductId
         );
 
         if (existingProductInCart != null)
         {
-            existingProductInCart.Quantity += cartProduct.Quantity;
+            /* existingProductInCart.Quantity += cartProduct.Quantity; */
+            userShoppingCart.Quantity += cartProduct.Quantity;
 
-            await _context.SaveChangesAsync();
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateConcurrencyException e)
+                when (_context.Carts.Any(x => x.Id == userShoppingCart.Id))
+            {
+                Log.Error(
+                    "Failed to update product in user's cart\nUserId: {@userId}\nProductId: {@productId}\nCartId: {@cartId}\nError: {@e}",
+                    cartProduct.UserId,
+                    cartProduct.ProductId,
+                    userShoppingCart.Id,
+                    e
+                );
+                return false;
+            }
 
             Log.Information("Quantity product in cart updated");
 
@@ -48,7 +64,7 @@ public class CartService(OnlineShopDbContext context) : ICartService
         }
         else
         {
-            ShoppingCartProducts.ShoppingCartProducts.Add(
+            userShoppingCart.ShoppingCartProducts.Add(
                 new ShoppingCartProduct
                 {
                     Product = product,
@@ -57,7 +73,12 @@ public class CartService(OnlineShopDbContext context) : ICartService
                 }
             );
             await _context.SaveChangesAsync();
-            Log.Information("New product added to cart");
+            Log.Information(
+                "New product added to cart\nUserId: {@userId}\nProductId: {@productId}\nCartId: {@cartId}",
+                cartProduct.UserId,
+                cartProduct.ProductId,
+                userShoppingCart.Id
+            );
             return true;
         }
     }
@@ -155,13 +176,26 @@ public class CartService(OnlineShopDbContext context) : ICartService
             /* return "Prouduct doesn't exist in cart"; */
         }
 
-        existingProductInCart.Quantity += cartProduct.Quantity;
-
-        await _context.SaveChangesAsync();
+        user.ShoppingCart.Quantity += cartProduct.Quantity;
+        try
+        {
+            await _context.SaveChangesAsync();
+        }
+        catch (DbUpdateConcurrencyException e)
+        {
+            Log.Error(
+                "Failed to update product in user's cart\nUserId: {@userId}\nProductId: {@productId}\nCartId: {@cartId}\nError: {@e}",
+                cartProduct.UserId,
+                cartProduct.ProductId,
+                user.ShoppingCart.Id,
+                e
+            );
+            return false;
+        }
 
         Log.Information(
             "Quantity of product in cart updated: {@quantity}",
-            existingProductInCart.Quantity
+            user.ShoppingCart.Quantity
         );
 
         return true;

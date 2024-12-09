@@ -11,7 +11,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.SerilogLoggerService(builder.Configuration);
 
 // Bootstrap logging
-/* builder.Host.SerilogLoggerServiceGlobal(); */
+/* builder.Host.SerilogLoggerGlobalHost(); */
 
 Log.Information("App is running");
 
@@ -55,7 +55,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-// NOTE: Minimal apis was registered here
+// NOTE: Minimal apis register here
 app.MapProductController();
 app.MapUserController();
 app.MapCartController();

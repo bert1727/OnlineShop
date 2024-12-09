@@ -88,7 +88,7 @@ public class UserService(OnlineShopDbContext context) : IUserService
         try
         {
             await _context.SaveChangesAsync();
-            Log.Information("User with Id: {@id} was updated", id);
+            Log.Error("User with Id: {@id} was updated", id);
         }
         catch (DbUpdateConcurrencyException e) when (_context.Users.Any(x => x.Id == id))
         {
